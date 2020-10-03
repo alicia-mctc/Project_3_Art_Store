@@ -2,7 +2,9 @@ import sqlite3
 from artist import Artist
 from artwork import Artwork
 
-conn = sqlite3.connect('artist.db')
+# set database path from configuration file. This is so the test can change the database path
+import db_config
+conn = sqlite3.connect(db_config.database_path)
 
 c = conn.cursor()
 
@@ -23,56 +25,42 @@ FOREIGN KEY(artist_id) REFERENCES artists(artist_id))""")
 
 conn.commit()
 
+conn.close()
 
-def insert_art(art):
-    with conn:
+
+
+def insert_artist(art):   # is this to insert an artist? 
+    with sqlite3.connect(db_config.database_path) as c:  # create a new connection in each function
         c.execute("INSERT INTO artists (name, email ) VALUES (?, ?)", 
         (art.name, art.email ))
+    c.close()  # and close connection in each function
         
 def get_arts_by_name(lastname):
+    with sqlite3.connect(db_config.database_path) as c:  # create a new connection in each function
         c.execute("SELECT * FROM artists WHERE name= ?", (lastname,))
         return c.fetchall()
+    c.close()  
 
-def update_price(art, price):
+
+def update_price(art, price):  # you don't need this 
     with conn:
         c.execute("""UPDATE artworks SET price = price 
-                    WHERE artwork_id = artwork_id AND artist_id = artist_id""",
+                    WHERE artwork_id = artwork_id AND artist_id = artist_id""",   # use parameters, the ? syntax
                    ( art.artwork_id, art.artist_id, art.price, art.available))
 
-def remove_art(art):
+def remove_art(art): 
     with conn:
-        c.execute("DELETE from artists WHERE first = first AND last = last",
-        art.name, art.email, art.name_of_artwork)
-
-def add_artist(art):
-    with conn:
-
-        art_1 = Artist( 1, 'L. S.', 'Lowry')
-        art_2 = Artist(2,'Claude', 'Monet' )
-        art_3 = Artist(3,'Vincent Van', 'Gogh')
-        insert_art(art_1)
-        insert_art(art_2)
-        insert_art(art_3)
-
-def add_artwork():
-    with conn:
-        artw_1 = Artwork(1, 1, 'The Beach', 100, available = True)
-        artw_2 = Artwork(2, 2, 'Water Lily Pond', 500, available = True)
-        artw_3 = Artwork(3, 3, 'Almond Blossom', 500, available = True)
-        insert_art(artw_1)
-        insert_art(artw_2)
-        insert_art(artw_3)
-
-        
-
-arts = get_arts_by_name('Lowry')
-print(arts)
-
-update_price([1], 700)
-remove_art([0])
-
-arts = get_arts_by_name('Lowry')
-print(arts)
+        c.execute("DELETE from artists WHERE first = first AND last = last",  # make sure you use the right column names and use parameters - the ? syntax
+        art.name, art.email, art.name_of_artwork)  # is email right? 
 
 
-conn.close()
+# Read the project requirements. There's a specfic set of features you need to implement 
+# add a new artist
+# search for all the artwork by an artist (everything - available and sold)
+# display for all the available artwork by an artist
+# add a new artwork. Make sure the artwork is associated with an artist. If needed, create an artist first. 
+# delete an artwork
+# change the availability status of an artwork, for example, change from available to sold
+
+
+
